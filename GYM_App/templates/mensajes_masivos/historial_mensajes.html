@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title_suffix %}Historial de Mensajes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">📜 Historial de Mensajes Masivos</h1>
+        <a href="{{ url_for('mensajes.enviar_mensaje_masivo') }}" class="btn btn-primary">
+            <i class="bi bi-send-fill"></i> Nuevo Envío Masivo
+        </a>
+    </div>
+
+    {% if mensajes.items %}
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha y Hora</th>
+                    <th>Asunto</th>
+                    <th>Filtro de Destino</th>
+                    <th class="text-center">Enviados</th>
+                    <th>Enviado Por</th> <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mensaje in mensajes.items %}
+                <tr>
+                    <td>#{{ mensaje.id }}</td>
+                    <td>{{ mensaje.fecha_envio.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                    <td class="fw-bold">{{ mensaje.asunto }}</td>
+                    <td>{{ mensaje.destinatario_filtro|capitalize }}</td>
+                    <td class="text-center text-success fw-bold">{{ mensaje.total_enviados }}</td>
+                    
+                    <td>{{ mensaje.usuario.nombre_usuario }}</td>
+                    
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                data-bs-toggle="modal" data-bs-target="#detalleModal{{ mensaje.id }}">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                    </td>
+                </tr>
+
+                <div class="modal fade" id="detalleModal{{ mensaje.id }}" tabindex="-1" aria-labelledby="detalleModalLabel{{ mensaje.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="detalleModalLabel{{ mensaje.id }}">{{ mensaje.asunto }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Fecha:</strong> {{ mensaje.fecha_envio.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                                <p><strong>Enviado a:</strong> {{ mensaje.destinatario_filtro|capitalize }} ({{ mensaje.total_enviados }} destinatarios)</p>
+                                
+                                <p><strong>Enviado por:</strong> {{ mensaje.usuario.nombre_usuario }}</p>
+                                
+                                <hr>
+                                <h6>Cuerpo del Mensaje (Resumen):</h6>
+                                <p class="alert alert-secondary">{{ mensaje.cuerpo_resumen }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if mensajes.pages > 1 %}
+        <nav aria-label="Paginación de historial" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not mensajes.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('mensajes.historial_mensajes', page=mensajes.prev_num) }}">Anterior</a>
+                </li>
+                {% for page_num in mensajes.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == mensajes.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('mensajes.historial_mensajes', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not mensajes.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('mensajes.historial_mensajes', page=mensajes.next_num) }}">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info text-center">
+        Aún no se ha registrado ningún mensaje masivo enviado.
+        <br>
+        <a href="{{ url_for('mensajes.enviar_mensaje_masivo') }}" class="btn btn-info mt-2">Enviar el primer mensaje</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

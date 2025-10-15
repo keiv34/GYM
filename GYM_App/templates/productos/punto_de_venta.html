@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-cash-stack"></i> Punto de Venta
+        </h2>
+        <div>
+            <a href="{{ url_for('productos.listar_productos') }}" class="btn btn-secondary shadow-sm me-2">
+                <i class="bi bi-box-seam"></i> Ir al Inventario
+            </a>
+            <a href="{{ url_for('ventas.historial_ventas') }}" class="btn btn-info text-white shadow-sm">
+                <i class="bi bi-journal-text"></i> Historial de Ventas
+            </a>
+        </div>
+    </div>
+
+    <!-- 🚨 Mensajes flash con SweetAlert -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for category, message in messages %}
+                Swal.fire({
+                    icon: "{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'error' }}",
+                    title: "{{ message }}",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    position: "center"
+                }).then(() => {
+                    {% if category == 'success' %}
+                        // Abrir recibo solo al confirmar venta
+                        const ventaId = "{{ request.args.get('venta_id', '') }}";
+                        if (ventaId) window.open(`/ventas/recibo/${ventaId}`, "_blank");
+                    {% endif %}
+                });
+            {% endfor %}
+        });
+        </script>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <!-- 🔎 Buscar Producto -->
+        <div class="col-md-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Buscar Producto</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre...">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    </div>
+                    <div id="resultado-busqueda"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🛒 Venta Actual -->
+        <div class="col-md-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Venta Actual</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        {% if 'venta_actual' in session and session['venta_actual'] %}
+                            {% for item in session['venta_actual'] %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ item.nombre }} (x{{ item.cantidad }})</span>
+                                    <span>${{ "%.2f"|format(item.subtotal) }}</span>
+                                    <a href="{{ url_for('ventas.remover_de_venta', item_index=loop.index0) }}" class="btn btn-danger btn-sm"><i class="bi bi-x"></i></a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-center text-muted">No hay productos en la venta</li>
+                        {% endif %}
+                    </ul>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+                        <span>Total:</span>
+                        <span>${{ "%.2f"|format(session['total_venta'] if 'total_venta' in session else 0) }}</span>
+                    </div>
+                    <form action="{{ url_for('ventas.confirmar_venta') }}" method="POST">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> Confirmar Venta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- JS búsqueda en tiempo real -->
+<script>
+document.getElementById("buscador").addEventListener("keyup", function() {
+    let query = this.value.trim();
+    let contenedor = document.getElementById("resultado-busqueda");
+
+    if (query.length < 2) {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    fetch(`/ventas/buscar-producto?query=${query}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data) {
+                contenedor.innerHTML = "<div class='alert alert-info'>No se encontró el producto.</div>";
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <div class="card mb-3 bg-light">
+                    <div class="card-body d-flex align-items-center">
+                        ${data.imagen_url 
+                            ? `<img src="${data.imagen_url}" alt="${data.nombre}" class="img-fluid me-3" style="width: 80px; height: 80px; object-fit: cover;">`
+                            : `<i class="bi bi-image-fill me-3 text-muted" style="font-size: 80px; width: 80px; height: 80px;"></i>`}
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold">${data.nombre}</h6>
+                            <p class="mb-0"><strong>Precio:</strong> $${data.precio.toFixed(2)}</p>
+                            <p class="mb-0 text-muted">Stock: ${data.stock}</p>
+                        </div>
+                        <form method="POST" action="/ventas/agregar-a-venta">
+                            <input type="hidden" name="producto_id" value="${data.id}">
+                            <input type="number" name="cantidad" class="form-control d-inline-block w-auto" value="1" min="1" max="${data.stock}" required>
+                            <button type="submit" class="btn btn-sm btn-success ms-2"><i class="bi bi-plus"></i> Agregar</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        });
+});
+</script>
+{% endblock %}

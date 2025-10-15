@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recibo de Venta</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; font-size: 14px; margin: 0; padding: 20px; }
+        .ticket { width: 300px; margin: 0 auto; padding: 15px; border: 1px dashed black; }
+        .header, .footer { text-align: center; }
+        .line { border-bottom: 1px dashed black; margin: 10px 0; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 5px 0; }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="ticket">
+        <div class="header">
+            <h4>Ticket de Venta</h4>
+            <p><strong>GYM</strong></p>
+            <p><strong>Recibo #{{ venta.id }}</strong></p>
+        </div>
+        <div class="line"></div>
+        <div class="info-row">
+            <span>Fecha:</span>
+            <span>{{ venta.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</span>
+        </div>
+        <div class="line"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in detalles %}
+                <tr>
+                    <td>{{ detalle.nombre }}</td>
+                    <td>{{ detalle.cantidad }}</td>
+                    <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="line"></div>
+        <div class="info-row">
+            <strong>TOTAL:</strong>
+            <strong>${{ "%.2f"|format(venta.total) }}</strong>
+        </div>
+        <div class="line"></div>
+        <div class="footer">
+            <p>¡Gracias por tu compra!</p>
+        </div>
+    </div>
+</body>
+</html>

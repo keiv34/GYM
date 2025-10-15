@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{# El título de la página cambiará dinámicamente #}
+{% block title %}
+    {% if page == 'login' %}
+        Iniciar Sesión
+    {% elif page == 'productos' %}
+        Nuestros Productos
+    {% elif page == 'asistencia' %}
+        Registro de Asistencia
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Estilos generales para las tarjetas de productos y el contenedor de asistencia */
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .card-img-top {
+        border-radius: 15px 15px 0 0;
+        object-fit: cover;
+        height: 200px;
+    }
+    .asistencia-container, .form-container {
+        max-width: 600px;
+        margin: 50px auto;
+    }
+
+    /* 🔹 Diseño para dividir info de gimnasio y login */
+    .login-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 50px;
+    }
+    .gym-info {
+        flex: 1;
+        min-width: 300px;
+        max-width: 500px;
+    }
+    .gym-info h1 {
+        font-weight: bold;
+    }
+    .gym-info .feature {
+        margin-top: 20px;
+    }
+    .form-container {
+        flex: 1;
+        min-width: 300px;
+        max-width: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ========= SECCIÓN DE INICIAR SESIÓN ========= #}
+{% if page == 'login' %}
+<div class="login-container">
+
+    <!-- 🔹 Info del gimnasio -->
+    <div class="gym-info">
+        <h1 class="text-primary text-center">🏋️‍♂️ Bienvenido a GYM</h1>
+        <p class="lead text-center">El mejor lugar para cuidar tu cuerpo y tu salud.</p>
+
+        <div class="row text-center">
+            <div class="col-md-4 feature">
+                <i class="bi bi-heart-pulse display-6 text-danger"></i>
+                <h6 class="fw-bold mt-2">Salud</h6>
+                <p class="small">Programas para mejorar tu bienestar físico.</p>
+            </div>
+            <div class="col-md-4 feature">
+                <i class="bi bi-people display-6 text-success"></i>
+                <h6 class="fw-bold mt-2">Entrenadores</h6>
+                <p class="small">Acompañamiento profesional en cada sesión.</p>
+            </div>
+            <div class="col-md-4 feature">
+                <i class="bi bi-calendar-check display-6 text-primary"></i>
+                <h6 class="fw-bold mt-2">Horarios</h6>
+                <p class="small">Flexibles y adaptados a tu estilo de vida.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔹 Formulario de login -->
+    <div class="form-container">
+        <h1 class="text-center mb-4">Iniciar Sesión</h1>
+        <form method="post">
+            <div class="mb-3">
+                <label for="nombre_usuario" class="form-label">Nombre de Usuario:</label>
+                <input type="text" name="nombre_usuario" id="nombre_usuario" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña:</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2">Iniciar Sesión</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('autenticacion.registro') }}">¿No tienes cuenta? Regístrate</a>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+
+{# ========= SECCIÓN DE PRODUCTOS ========= #}
+{% if page == 'productos' %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-box-seam"></i> Productos Disponibles
+        </h2>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for producto in productos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {% if producto.imagen_url %}
+                    <img src="{{ url_for('static', filename=producto.imagen_url) }}" class="card-img-top" alt="{{ producto.nombre }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.png') }}" class="card-img-top" alt="Sin Imagen">
+                {% endif %}
+                <div class="card-body text-center d-flex flex-column">
+                    <h5 class="card-title fw-bold">{{ producto.nombre }}</h5>
+                    <p class="card-text fs-5 fw-semibold text-success mt-auto">
+                        ${{ "%.2f"|format(producto.precio) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center shadow-sm">
+                No hay productos disponibles para mostrar.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+{# ========= SECCIÓN DE ASISTENCIA ========= #}
+{% if page == 'asistencia' %}
+<div class="asistencia-container">
+    <div class="card shadow-lg p-4 text-center">
+        <h2 class="card-title mb-4 fw-bold">Registro de Asistencia</h2>
+        <div class="mb-4">
+            <video id="preview" style="width: 100%; height: auto; border-radius: 8px;"></video>
+        </div>
+        <p class="text-muted">Apunte la cámara al código QR.</p>
+        <hr>
+        <form id="asistenciaForm" action="{{ url_for('asistencias.registrar_asistencia') }}" method="post">
+            <div class="mb-3">
+                <label for="entrada_usuario" class="form-label">O ingrese el ID/Código manualmente</label>
+                <input type="text" class="form-control form-control-lg" id="entrada_usuario" name="entrada_usuario" autofocus required>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Registrar Asistencia</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+        scanner.addListener('scan', function (content) {
+            document.getElementById('entrada_usuario').value = content;
+            document.getElementById('asistenciaForm').submit();
+        });
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                console.error('No se encontraron cámaras.');
+            }
+        }).catch(function (e) {
+            console.error(e);
+        });
+    });
+</script>
+{% endif %}
+
+{% endblock %}

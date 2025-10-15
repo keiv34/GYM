@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/servicios.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="page-header">
+        <h1 class="page-title text-primary fw-bold">Gestión de Servicios 🛠️</h1>
+        <a href="{{ url_for('servicios.crear_servicio') }}" class="btn btn-add-service">
+            <i class="fas fa-plus-circle me-2"></i> Añadir Nuevo Servicio
+        </a>
+    </div>
+
+    {% if servicios %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for servicio in servicios %}
+        <div class="col">
+            <div class="service-card h-100">
+                <div class="card-content">
+                    <h5 class="card-title">{{ servicio.nombre }}</h5>
+                    <p class="card-info mb-1"><strong>ID:</strong> <span class="text-muted">{{ servicio.id }}</span></p>
+                    <p class="card-info mb-1"><strong>Tipo:</strong> {{ servicio.tipo_servicio }}</p>
+                    <p class="card-info mb-3"><strong>Costo:</strong> <span class="text-success fw-bold">${{ "%.2f"|format(servicio.costo) }}</span></p>
+                    <div class="card-actions">
+                        <a href="{{ url_for('servicios.editar_servicio', id=servicio.id) }}" class="btn btn-sm btn-edit">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <form action="{{ url_for('servicios.eliminar_servicio', id=servicio.id) }}" method="post" style="display:inline-block;">
+                            <button type="submit" class="btn btn-sm btn-delete" onclick="return confirm('¿Estás seguro de que deseas eliminar este servicio?');">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-services-message">
+        <p class="mb-0">Aún no tienes servicios registrados. ¡Añade uno para empezar! 🚀</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

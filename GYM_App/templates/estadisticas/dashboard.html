@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estadisticas.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-5 text-primary fw-bold">Estadísticas 📊</h1>
+
+    <div class="row g-4 mb-5" id="resumen-kpis">
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users-cog"></i> Total de Clientes</h5>
+                    <p class="card-text" id="total-clientes">...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi card-active">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-check"></i> Clientes Activos</h5>
+                    <p class="card-text" id="clientes-activos">...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi card-income">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Ingresos Totales</h5>
+                    <p class="card-text" id="ingresos-total">...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi card-new">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-plus"></i> Nuevos Clientes</h5>
+                    <p class="card-text" id="nuevos-clientes">...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi card-services-income">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-handshake"></i> Ingresos por Servicios</h5>
+                    <p class="card-text" id="ingresos-servicios">...</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-kpi card-sales-income">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Ingresos por Ventas</h5>
+                    <p class="card-text" id="ingresos-ventas">...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm rounded-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Filtros</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="fecha-inicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="fecha-inicio">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fecha-fin" class="form-label">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="fecha-fin">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Ingresos Mensuales</h5>
+                    <canvas id="ingresosChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Distribución de Clientes por Estatus</h5>
+                    <canvas id="estatusClientesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Distribución de Clientes por Edad</h5>
+                    <canvas id="distribucionEdadChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Distribución de Clientes por Género</h5>
+                    <canvas id="distribucionGeneroChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Distribución de Clientes por Servicio Activo</h5>
+                    <canvas id="distribucionServicioChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let ingresosChart = null;
+    let estatusClientesChart = null;
+    let distribucionEdadChart = null;
+    let distribucionServicioChart = null;
+    let distribucionGeneroChart = null; // Nuevo gráfico de género
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaInicioInput = document.getElementById('fecha-inicio');
+        const fechaFinInput = document.getElementById('fecha-fin');
+
+        function loadDashboardData() {
+            const fechaInicio = fechaInicioInput.value;
+            const fechaFin = fechaFinInput.value;
+            const urlParams = new URLSearchParams();
+            if (fechaInicio) {
+                urlParams.append('fecha_inicio', fechaInicio);
+            }
+            if (fechaFin) {
+                urlParams.append('fecha_fin', fechaFin);
+            }
+
+            loadResumenData(urlParams);
+            loadIngresosChart(urlParams);
+            loadDistribucionEdadChart(urlParams);
+        }
+
+        function loadResumenData(params) {
+            fetch("{{ url_for('estadisticas.get_resumen_data') }}?" + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-clientes').textContent = data.total_clientes;
+                    document.getElementById('clientes-activos').textContent = data.clientes_activos;
+                    document.getElementById('ingresos-total').textContent = `$${data.ingresos_total}`;
+                    document.getElementById('ingresos-servicios').textContent = `$${data.ingresos_servicios}`;
+                    document.getElementById('ingresos-ventas').textContent = `$${data.ingresos_ventas}`;
+                    document.getElementById('nuevos-clientes').textContent = data.nuevos_clientes_mes;
+                })
+                .catch(error => console.error('Error al cargar datos de resumen:', error));
+        }
+
+        function loadIngresosChart(params) {
+            fetch("{{ url_for('estadisticas.get_ingresos_mensuales') }}?" + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('ingresosChart').getContext('2d');
+                    if (ingresosChart) {
+                        ingresosChart.destroy();
+                    }
+                    ingresosChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Ingresos Mensuales ($)',
+                                data: data.ingresos,
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error al cargar datos del gráfico:', error));
+        }
+
+        function loadEstatusClientesChart() {
+            fetch("{{ url_for('estadisticas.get_estatus_clientes') }}")
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('estatusClientesChart').getContext('2d');
+                    if (estatusClientesChart) {
+                        estatusClientesChart.destroy();
+                    }
+                    estatusClientesChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: [
+                                    'rgba(40, 167, 69, 0.8)',
+                                    'rgba(220, 53, 69, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 255, 255, 1)',
+                                    'rgba(255, 255, 255, 1)'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                title: {
+                                    display: false,
+                                    text: 'Distribución de Clientes por Estatus'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error al cargar datos de estatus de clientes:', error));
+        }
+        
+        function loadDistribucionEdadChart(params) {
+            fetch("{{ url_for('estadisticas.get_distribucion_edad') }}?" + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('distribucionEdadChart').getContext('2d');
+                    if (distribucionEdadChart) {
+                        distribucionEdadChart.destroy();
+                    }
+                    distribucionEdadChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Cantidad de Clientes',
+                                data: data.data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error al cargar datos de edad:', error));
+        }
+
+        function loadDistribucionGeneroChart() {
+            fetch("{{ url_for('estadisticas.get_distribucion_genero') }}")
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('distribucionGeneroChart').getContext('2d');
+                    if (distribucionGeneroChart) {
+                        distribucionGeneroChart.destroy();
+                    }
+                    const dynamicColors = ['#4e79a7', '#f28e2c', '#e15759']; // Colores para Masculino, Femenino, Otro
+                    distribucionGeneroChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: dynamicColors.slice(0, data.labels.length),
+                                borderColor: 'rgba(255, 255, 255, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                title: {
+                                    display: false,
+                                    text: 'Distribución de Clientes por Género'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error al cargar datos de género:', error));
+        }
+
+        function loadDistribucionServicioChart() {
+            fetch("{{ url_for('estadisticas.get_distribucion_servicio') }}")
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('distribucionServicioChart').getContext('2d');
+                    if (distribucionServicioChart) {
+                        distribucionServicioChart.destroy();
+                    }
+                    const dynamicColors = [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ];
+                    distribucionServicioChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: dynamicColors,
+                                borderColor: 'rgba(255, 255, 255, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error al cargar datos de servicio:', error));
+        }
+
+        fechaInicioInput.addEventListener('change', loadDashboardData);
+        fechaFinInput.addEventListener('change', loadDashboardData);
+
+        loadDashboardData();
+        loadEstatusClientesChart();
+        loadDistribucionServicioChart();
+        loadDistribucionGeneroChart(); // Cargar el nuevo gráfico
+    });
+</script>
+{% endblock %}

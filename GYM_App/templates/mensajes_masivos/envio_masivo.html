@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Envío Masivo de Correos{% endblock %}
+
+{% block styles %}
+<style>
+    /* Estilo para dar un color de fondo sutil al contenedor del formulario */
+    .envio-form-container {
+        padding: 30px;
+        background-color: #f8f9fa; /* Gris muy claro */
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    
+    /* Estilo para mejorar el aspecto del botón de envío */
+    .btn-primary.btn-lg {
+        background-color: #007bff; /* Azul primario de Bootstrap */
+        border-color: #007bff;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn-primary.btn-lg:hover {
+        background-color: #0056b3; /* Azul más oscuro al pasar el mouse */
+        border-color: #0056b3;
+    }
+    
+    /* Estilo para resaltar la caja del correo (asunto y cuerpo) */
+    .form-control[name="asunto"],
+    .form-control[name="cuerpo"] {
+        border-left: 5px solid #007bff; /* Barra azul a la izquierda */
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">📧 Enviar Mensajes Masivos por Correo</h1>
+    <p class="text-center text-muted mb-4">Selecciona el grupo de clientes y redacta el mensaje a enviar.</p>
+
+    <div class="card shadow-lg mx-auto" style="max-width: 800px;">
+        <div class="card-body envio-form-container">
+            <form method="POST" action="{{ url_for('mensajes.enviar_mensaje_masivo') }}">
+                {{ form.hidden_tag() }}
+
+                <fieldset class="mb-4 p-3 border rounded">
+                    <legend class="float-none w-auto px-2 fs-6 text-primary fw-bold">1. Seleccionar Destinatarios</legend>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.destinatario.id }}" class="form-label fw-bold">Grupo de Clientes</label>
+                            {{ form.destinatario(class="form-select") }}
+                            {% for error in form.destinatario.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.cliente_especifico.id }}" class="form-label fw-bold">ID o Email Específico</label>
+                            {{ form.cliente_especifico(class="form-control", placeholder="Ej: 15 ó cliente@correo.com") }}
+                            <small class="form-text text-muted">Solo aplica si seleccionaste 'Cliente Específico'.</small>
+                            {% for error in form.cliente_especifico.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="mb-4 p-3 border rounded">
+                    <legend class="float-none w-auto px-2 fs-6 text-primary fw-bold">2. Redactar Mensaje</legend>
+                    <div class="mb-3">
+                        <label for="{{ form.asunto.id }}" class="form-label fw-bold">Asunto del Correo</label>
+                        {{ form.asunto(class="form-control", placeholder="Ej: Promoción de Verano | Recordatorio de Pago") }}
+                        {% for error in form.asunto.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.cuerpo.id }}" class="form-label fw-bold">Cuerpo del Mensaje</label>
+                        {{ form.cuerpo(class="form-control", rows="8", placeholder="Escribe tu mensaje aquí...") }}
+                        {% for error in form.cuerpo.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                
+                <div class="d-grid gap-2">
+                    {{ form.submit(class="btn btn-primary btn-lg shadow") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

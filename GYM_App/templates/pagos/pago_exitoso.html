@@ -1,0 +1,536 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .container {
+        max-width: 1100px;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .payment-form-section .card-body {
+        padding: 40px;
+    }
+
+    h1, .h4 {
+        color: #333;
+        font-weight: bold;
+    }
+
+    .card-title {
+        color: #333;
+        font-weight: bold;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #555;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-2px);
+    }
+    
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+        transform: translateY(-2px);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+    
+    .cancel-btn {
+        flex-grow: 1;
+        padding: 15px;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #6c757d;
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    
+    .cancel-btn:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    .payment-form-section {
+        display: none;
+        transition: all 0.5s ease-in-out;
+    }
+    
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .table thead th {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .error-message {
+        color: #e3342f;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    
+    /* Estilos del modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 40px 20px 20px 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+        animation: modal-fadein 0.3s ease-out;
+    }
+
+    @keyframes modal-fadein {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-icon-container {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 80px;
+        background-color: #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-icon {
+        font-size: 40px;
+        color: #fff;
+        background-color: #28a745;
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+    .modal-error .modal-icon {
+        background-color: #dc3545;
+    }
+    
+    .modal-loading .modal-icon {
+        background-color: #ffc107;
+    }
+    
+    .modal-content h3 {
+        font-size: 24px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .modal-content p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .modal-success h3 { color: #28a745; }
+    .modal-error h3 { color: #dc3545; }
+    .modal-loading h3 { color: #ffc107; }
+
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary fw-bold">Módulo de Pagos <i class="fas fa-credit-card"></i></h1>
+        <button id="toggle-form-btn" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-plus-circle me-2"></i> Procesar Nuevo Pago
+        </button>
+    </div>
+
+    <div class="payment-form-section" id="form-section">
+        <div class="card shadow-sm rounded-3 border-0">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">Procesar Nuevo Pago</h3>
+                <form id="paymentForm" class="payment-form" novalidate>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cliente_search" class="form-label">Buscar Cliente:</label>
+                            <input type="text" id="cliente_search" class="form-control" placeholder="ID, nombre o email">
+                            <input type="hidden" name="cliente_id" id="cliente_id">
+                            <div id="clienteError" class="error-message"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="servicio_id" class="form-label">Servicio (Membresía):</label>
+                            <select name="servicio_id" id="servicio_id" class="form-select">
+                                <option value="">Seleccione un servicio</option>
+                                {% for servicio in servicios %}
+                                <option value="{{ servicio.id }}">{{ servicio.nombre }} - ${{ "%.2f"|format(servicio.costo) }}</option>
+                                {% endfor %}
+                            </select>
+                            <div id="servicioError" class="error-message"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input type="checkbox" class="form-check-input" id="inscripcion_check">
+                        <label class="form-check-label" for="inscripcion_check">Agregar Inscripción</label>
+                    </div>
+                    
+                    <div class="mt-3 d-none" id="inscripcion_group">
+                        <label for="inscripcion_monto" class="form-label">Monto de Inscripción:</label>
+                        <input type="number" name="inscripcion_monto" id="inscripcion_monto" class="form-control" step="0.01">
+                        <div id="inscripcionError" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-actions mt-4">
+                        <a href="{{ url_for('servicios.listar_servicios') }}" class="form-btn cancel-btn">Cancelar</a>
+                        <button type="submit" class="form-btn btn-success">Procesar Pago</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-section mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Historial de Pagos</h2>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="payments-search" class="form-control" placeholder="Buscar por nombre...">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+            </div>
+        </div>
+        
+        {% if pagos %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped shadow-sm rounded-3 overflow-hidden">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Servicio</th>
+                        <th scope="col">Costo Servicio</th>
+                        <th scope="col">Inscripción</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Fecha Inicio</th>
+                        <th scope="col">Fecha Fin</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-table-body">
+                    {% for pago in pagos %}
+                    <tr>
+                        <td>{{ pago.cliente.nombre }}</td>
+                        <td>{{ pago.servicio.nombre }}</td>
+                        <td>${{ "%.2f"|format(pago.costo_servicio) }}</td>
+                        <td>
+                            {% if pago.costo_inscripcion is not none and pago.costo_inscripcion > 0 %}
+                                ${{ "%.2f"|format(pago.costo_inscripcion) }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="text-success fw-bold">${{ "%.2f"|format(pago.costo_servicio + (pago.costo_inscripcion if pago.costo_inscripcion is not none else 0)) }}</span></td>
+                        <td>{{ pago.fecha_inicio.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ pago.fecha_fin.strftime('%Y-%m-%d') if pago.fecha_fin else 'No aplica' }}</td>
+                        <td>
+                            <a href="{{ url_for('pagos.ver_detalles_pago', pago_id=pago.id) }}" class="btn btn-info btn-sm text-white">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center mt-4" role="alert">
+            No hay pagos registrados.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="modalCloseBtn">&times;</span>
+        <div class="modal-icon-container">
+            <i id="modalIcon" class="fas fa-check-circle modal-icon"></i>
+        </div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage"></p>
+    </div>
+</div>
+<div id="processingModal" class="modal">
+    <div class="modal-content modal-loading">
+        <div class="modal-icon-container">
+            <i class="fas fa-sync-alt modal-icon fa-spin"></i>
+        </div>
+        <h3>Procesando Pago</h3>
+        <p>Por favor, espere...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        const formSection = document.getElementById('form-section');
+        const processingModal = document.getElementById('processingModal');
+        const messageModal = document.getElementById('messageModal');
+
+        function openModal(modalId, title, message, isSuccess = true) {
+            const modal = document.getElementById(modalId);
+            const modalTitle = modal.querySelector('#modalTitle');
+            const modalMessage = modal.querySelector('#modalMessage');
+            const modalContent = modal.querySelector('.modal-content');
+            const modalIcon = modal.querySelector('#modalIcon');
+
+            if (modalTitle) modalTitle.textContent = title;
+            if (modalMessage) modalMessage.textContent = message;
+            
+            modalContent.classList.remove('modal-success', 'modal-error');
+            if (isSuccess) {
+                modalContent.classList.add('modal-success');
+                if(modalIcon) modalIcon.classList.remove('fa-exclamation-circle', 'fa-sync-alt', 'fa-spin');
+                if(modalIcon) modalIcon.classList.add('fa-check-circle');
+            } else {
+                modalContent.classList.add('modal-error');
+                if(modalIcon) modalIcon.classList.remove('fa-check-circle', 'fa-sync-alt', 'fa-spin');
+                if(modalIcon) modalIcon.classList.add('fa-exclamation-circle');
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeAllModals() {
+            processingModal.style.display = 'none';
+            messageModal.style.display = 'none';
+        }
+
+        // Lógica para mostrar/ocultar el formulario
+        const toggleFormBtn = document.getElementById('toggle-form-btn');
+        const formToggleIcon = toggleFormBtn.querySelector('i');
+        
+        toggleFormBtn.addEventListener('click', function() {
+            const isVisible = formSection.classList.toggle('d-block');
+            formToggleIcon.classList.toggle('fa-plus-circle', !isVisible);
+            formToggleIcon.classList.toggle('fa-times-circle', isVisible);
+            this.childNodes[2].nodeValue = isVisible ? ' Ocultar Formulario' : ' Procesar Nuevo Pago';
+        });
+
+        // Lógica para el autocompletado de clientes
+        $(function() {
+            $("#cliente_search").autocomplete({
+                source: function(request, response) {
+                    $.getJSON("{{ url_for('pagos.buscar_clientes') }}", { q: request.term }, function(data) {
+                        response(data);
+                    });
+                },
+                minLength: 2,
+                select: function(event, ui) {
+                    $("#cliente_id").val(ui.item.id);
+                    $(this).val(ui.item.label);
+                    $("#cliente_search").removeClass('is-invalid');
+                    return false;
+                }
+            }).autocomplete( "instance" )._renderItem = function( ul, item ) {
+                return $( "<li>" )
+                    .append("<div>" + item.label + "</div>")
+                    .appendTo(ul);
+            };
+        });
+
+        // Lógica para el campo de inscripción
+        const inscripcionCheck = document.getElementById('inscripcion_check');
+        const inscripcionGroup = document.getElementById('inscripcion_group');
+        const inscripcionInput = document.getElementById('inscripcion_monto');
+
+        inscripcionCheck.addEventListener('change', function() {
+            if (this.checked) {
+                inscripcionGroup.classList.remove('d-none');
+                inscripcionInput.setAttribute('required', 'required');
+            } else {
+                inscripcionGroup.classList.add('d-none');
+                inscripcionInput.removeAttribute('required');
+                inscripcionInput.value = '';
+                document.getElementById('inscripcionError').textContent = '';
+            }
+        });
+
+        // Lógica para la barra de búsqueda de historial
+        document.getElementById('payments-search').addEventListener('keyup', function() {
+            const query = this.value.toLowerCase();
+            const rows = document.getElementById('payments-table-body').getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const customerName = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+                rows[i].style.display = customerName.includes(query) ? '' : 'none';
+            }
+        });
+
+        const paymentForm = document.getElementById('paymentForm');
+        paymentForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const clienteId = document.getElementById('cliente_id').value;
+            const servicioId = document.getElementById('servicio_id').value;
+            const inscripcionCheck = document.getElementById('inscripcion_check').checked;
+            const inscripcionMonto = document.getElementById('inscripcion_monto').value;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            let hasError = false;
+            
+            if (!clienteId) {
+                document.getElementById('clienteError').textContent = 'Debe seleccionar un cliente.';
+                hasError = true;
+            }
+            if (!servicioId) {
+                document.getElementById('servicioError').textContent = 'Debe seleccionar un servicio.';
+                hasError = true;
+            }
+            if (inscripcionCheck) {
+                if (!inscripcionMonto || isNaN(inscripcionMonto) || parseFloat(inscripcionMonto) < 0) {
+                    document.getElementById('inscripcionError').textContent = 'El monto de inscripción es obligatorio y debe ser un número válido.';
+                    hasError = true;
+                }
+            }
+
+            if (hasError) {
+                openModal('messageModal', 'Error de Validación', 'Por favor, complete todos los campos obligatorios.', false);
+                return;
+            }
+
+            openModal('processingModal');
+
+            const formData = new FormData(this);
+            const response = await fetch("{{ url_for('pagos.procesar_pago') }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                openModal('messageModal', 'Pago Exitoso', result.message, true);
+                setTimeout(() => {
+                    closeAllModals();
+                    window.location.reload();
+                }, 3000);
+            } else {
+                openModal('messageModal', 'Error en el Pago', result.error, false);
+            }
+        });
+
+        document.getElementById('modalCloseBtn').onclick = closeAllModals;
+        window.onclick = function(event) {
+            if (event.target == messageModal) {
+                closeAllModals();
+            }
+        }
+    </script> 
+{% endblock scripts %}

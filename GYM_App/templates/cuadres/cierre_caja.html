@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    .module-title {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .cierre-card {
+        border-radius: 1rem;
+        box-shadow: 0 6px 15px rgba(0,0,0,.08);
+        transition: transform 0.25s ease-in-out;
+    }
+    .cierre-card:hover {
+        transform: translateY(-4px);
+    }
+    .report-item {
+        padding: 10px 0;
+        border-bottom: 1px dashed #e5e5e5;
+    }
+    .report-item:last-child {
+        border-bottom: none;
+    }
+    .report-label {
+        font-weight: 500;
+        color: #555;
+    }
+    .report-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    .bg-system-report {
+        background-color: #ffffff;
+        border-radius: .75rem;
+    }
+    .bg-expected {
+        background: linear-gradient(135deg, #e9f7ef, #d4edda);
+        border-radius: .75rem;
+    }
+    .card-header h5 {
+        font-weight: 600;
+    }
+    .btn-lg i {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <h2 class="module-title"><i class="fas fa-cash-register me-2 text-primary"></i> Cierre de Caja</h2>
+        <p class="text-muted">Conciliación de ingresos desde <strong>{{ totales.fecha_inicio_periodo }}</strong></p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="alert-container mb-4">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }}"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <!-- Reporte del sistema -->
+        <div class="col-lg-6">
+            <div class="card cierre-card bg-system-report h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title text-primary mb-0">
+                        <i class="fas fa-chart-line me-2"></i> Reporte de Ingresos del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="report-item d-flex justify-content-between align-items-center">
+                        <span class="report-label"><i class="fas fa-money-bill-wave me-2 text-success"></i> Ventas de Productos y Servicios:</span>
+                        <span class="report-value text-success">${{ "%.2f"|format(totales.Efectivo) }}</span>
+                    </div>
+                    
+                    <div class="report-item mt-4 pt-3 bg-light rounded p-3 d-flex justify-content-between align-items-center shadow-sm">
+                        <span class="report-label fw-bold text-dark"><i class="fas fa-plus-circle me-2"></i> GRAN TOTAL DE INGRESOS:</span>
+                        <span class="report-value text-dark">${{ "%.2f"|format(totales.Total) }}</span>
+                    </div>
+                    
+                    <p class="mt-3 text-muted small">
+                        <i class="fas fa-info-circle me-1"></i> Nota: El sistema asume que todos los ingresos son pagos en efectivo para el cuadre.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conciliación -->
+        <div class="col-lg-6">
+            <div class="card cierre-card bg-expected h-100">
+                <div class="card-header bg-success text-white py-3 border-0">
+                    <h5 class="card-title mb-0"><i class="fas fa-calculator me-2"></i> Conciliación de Efectivo</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('cuadres.cierre_caja') }}">
+                        <div class="mb-3 report-item">
+                            <label class="form-label report-label">1. Fondo Inicial de Caja:</label>
+                            <div class="report-value text-success">${{ "%.2f"|format(fondo_inicial) }}</div>
+                        </div>
+
+                        <div class="mb-3 report-item">
+                            <label class="form-label report-label">2. Efectivo Vendido (Sistema):</label>
+                            <div class="report-value">${{ "%.2f"|format(totales.Efectivo) }}</div>
+                        </div>
+
+                        <div class="mb-4 pt-3 border-top border-success">
+                            <label class="form-label report-label fw-bold">3. EFECTIVO ESPERADO EN CAJA (1 + 2):</label>
+                            <div class="report-value text-success h4">${{ "%.2f"|format(efectivo_esperado) }}</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="monto_contado_efectivo" class="form-label report-label fw-bold text-danger">4. MONTO CONTADO FÍSICAMENTE:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-lg" id="monto_contado_efectivo" name="monto_contado_efectivo" required placeholder="0.00">
+                            </div>
+                            <small class="form-text text-muted">Ingresa el total de billetes y monedas contados.</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg shadow-sm" onclick="return confirm('¿Confirma que el conteo físico es correcto y desea cerrar la caja para este periodo?');">
+                                <i class="fas fa-lock me-2"></i> Cerrar Caja y Cuadrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="mt-5 text-center">
+        <a href="{{ url_for('cuadres.historial_cuadres') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-history me-2"></i> Ver Historial de Cuadres
+        </a>
+    </div>
+</div>
+{% endblock %}

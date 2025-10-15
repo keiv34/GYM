@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    body {
+        background-color: #f0f2f5;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-group select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23888" d="M10 4L6 8 2 4z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 12px;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    .form-btn {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    
+    .btn-submit {
+        background-color: #007bff;
+    }
+    .btn-submit:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        margin-top: 10px;
+    }
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .error-message {
+        color: #e3342f;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    /* Estilos del modal basados en la imagen */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 40px 20px 20px 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+        animation: modal-fadein 0.3s ease-out;
+    }
+
+    @keyframes modal-fadein {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-icon-container {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 80px;
+        background-color: #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-icon {
+        font-size: 40px;
+        color: #fff;
+        background-color: #28a745;
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+    .modal-error .modal-icon {
+        background-color: #dc3545;
+    }
+
+    .modal-content h3 {
+        font-size: 24px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .modal-content p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .modal-success h3 { color: #28a745; }
+    .modal-error h3 { color: #dc3545; }
+    
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Crear Nuevo Cliente</h1>
+    <form method="post" class="client-form" id="createClientForm" enctype="multipart/form-data" novalidate>
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" name="nombre" id="nombre">
+            <div id="nombreError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email">
+            <div id="emailError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="direccion">Dirección:</label>
+            <input type="text" name="direccion" id="direccion">
+        </div>
+        <div class="form-group">
+            <label for="telefono">Teléfono:</label>
+            <input type="text" name="telefono" id="telefono">
+            <div id="telefonoError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="telefono_emergencia">Teléfono de Emergencia:</label>
+            <input type="text" name="telefono_emergencia" id="telefono_emergencia">
+        </div>
+        <div class="form-group">
+            <label for="edad">Edad:</label>
+            <input type="number" name="edad" id="edad">
+        </div>
+        
+        <div class="form-group">
+            <label for="sexo">Sexo:</label>
+            <select name="sexo" id="sexo" required>
+                <option value="" disabled selected>Seleccione el sexo</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+            </select>
+            <div id="sexoError" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="foto_perfil">Foto de Perfil:</label>
+            <input type="file" name="foto_perfil" id="foto_perfil" accept="image/*">
+        </div>
+        <button type="submit" class="form-btn btn-submit">Guardar Cliente</button>
+        <a href="{{ url_for('clientes.listar_clientes') }}" class="form-btn btn-cancel text-center" style="text-decoration: none; display: block;">Cancelar</a>
+    </form>
+</div>
+
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-icon-container">
+            <i id="modalIcon" class="fas fa-check-circle modal-icon"></i>
+        </div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage"></p>
+    </div>
+</div>
+
+<script>
+    function openModal(title, message, isSuccess) {
+        const modal = document.getElementById('messageModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalContent = modal.querySelector('.modal-content');
+        const modalIcon = document.getElementById('modalIcon');
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        modalContent.classList.remove('modal-success', 'modal-error');
+        if (isSuccess) {
+            modalContent.classList.add('modal-success');
+            modalIcon.classList.remove('fa-exclamation-circle');
+            modalIcon.classList.add('fa-check-circle');
+        } else {
+            modalContent.classList.add('modal-error');
+            modalIcon.classList.remove('fa-check-circle');
+            modalIcon.classList.add('fa-exclamation-circle');
+        }
+
+        modal.style.display = 'block';
+
+        if (isSuccess) {
+            setTimeout(() => {
+                closeModal();
+            }, 3000); // Cierra automáticamente después de 3 segundos
+        }
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('messageModal');
+        modal.style.display = 'none';
+        // Puedes redirigir aquí si es un mensaje de éxito
+        window.location.href = "{{ url_for('clientes.listar_clientes') }}";
+    }
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('messageModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Validación del formulario en el lado del cliente
+        const form = document.getElementById('createClientForm');
+        form.addEventListener('submit', function(event) {
+            const nombre = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const sexo = document.getElementById('sexo').value;
+
+            let hasError = false;
+
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            if (!nombre) {
+                document.getElementById('nombreError').textContent = 'El nombre es obligatorio.';
+                hasError = true;
+            }
+            if (!email) {
+                document.getElementById('emailError').textContent = 'El email es obligatorio.';
+                hasError = true;
+            }
+            if (!telefono) {
+                document.getElementById('telefonoError').textContent = 'El teléfono es obligatorio.';
+                hasError = true;
+            }
+            if (!sexo) {
+                document.getElementById('sexoError').textContent = 'El sexo es obligatorio.';
+                hasError = true;
+            }
+
+            if (hasError) {
+                event.preventDefault();
+                openModal('Error de Validación', 'Por favor, completa todos los campos obligatorios.', false);
+            }
+        });
+
+        // REVISAMOS EL MENSAJE DE ÉXITO PASADO DESDE EL SERVIDOR
+        {% if success_message %}
+            openModal('¡Gracias!', "{{ success_message }}", true);
+        {% endif %}
+
+        // Revisar si existen mensajes de flash del servidor
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    const title = category === 'success' ? '¡Gracias!' : 'Error';
+                    const isSuccess = category === 'success';
+                    openModal(title, message, isSuccess);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    });
+</script>
+{% endblock %}

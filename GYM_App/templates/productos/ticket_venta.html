@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg" style="max-width: 400px; width: 100%;">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0 fw-bold">Ticket de Venta</h4>
+        </div>
+        <div class="card-body">
+            <p class="mb-1 text-center"><strong>GYM</strong></p>
+            <p class="mb-4 text-center text-muted"><small>{{ fecha.strftime('%d/%m/%Y %H:%M:%S') }}</small></p>
+
+            <table class="table table-borderless table-sm">
+                <thead>
+                    <tr class="fw-bold">
+                        <td>Producto</td>
+                        <td class="text-end">Cantidad</td>
+                        <td class="text-end">Subtotal</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in venta %}
+                    <tr>
+                        <td>{{ item.nombre }}</td>
+                        <td class="text-end">{{ item.cantidad }}</td>
+                        <td class="text-end">${{ "%.2f"|format(item.subtotal) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <hr class="my-2">
+            <div class="d-flex justify-content-between fw-bold fs-5">
+                <span>TOTAL:</span>
+                <span>${{ "%.2f"|format(total) }}</span>
+            </div>
+            <p class="mt-4 text-center"><small>¡Gracias por tu compra!</small></p>
+        </div>
+        <div class="card-footer text-center">
+            <a href="{{ url_for('productos.punto_de_venta') }}" class="btn btn-primary"><i class="bi bi-arrow-left"></i> Nueva Venta</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

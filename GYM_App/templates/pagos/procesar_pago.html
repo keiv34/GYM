@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+<style>
+    .ui-autocomplete { max-height: 200px; overflow-y: auto; overflow-x: hidden; border-radius: .25rem; z-index: 1000; }
+    .ui-menu-item { padding: .5rem .75rem; border-bottom: 1px solid #dee2e6; }
+    .ui-menu-item:last-child { border-bottom: none; }
+    .ui-menu-item:hover { background-color: #f8f9fa; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary fw-bold">Módulo de Pagos <i class="fas fa-credit-card"></i></h1>
+        <button id="toggle-form-btn" class="btn btn-primary d-flex align-items-center transition-fade-up">
+            <i class="fas fa-plus-circle me-2"></i> Procesar Nuevo Pago
+        </button>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div class="payment-form-section" id="form-section">
+        <div class="card shadow rounded-3 border-0">
+            <div class="card-header bg-primary text-white p-3 d-flex align-items-center justify-content-between">
+                <h5 class="mb-0">Procesar Nuevo Pago</h5>
+                <i class="fas fa-info-circle text-white-50" data-bs-toggle="tooltip" data-bs-placement="top" title="Completa los datos para registrar una nueva membresía o renovación."></i>
+            </div>
+            <div class="card-body p-4">
+                <form id="payment-form" class="payment-form">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="cliente_search" class="form-label">Buscar Cliente:</label>
+                            <input type="text" id="cliente_search" class="form-control" placeholder="ID, nombre o email" required>
+                            <input type="hidden" name="cliente_id" id="cliente_id" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="servicio_id" class="form-label">Servicio (Membresía):</label>
+                            <select name="servicio_id" id="servicio_id" class="form-select" required>
+                                <option value="" disabled selected>Seleccione un servicio</option>
+                                {% for servicio in servicios %}
+                                <option value="{{ servicio.id }}">{{ servicio.nombre }} - ${{ "%.2f"|format(servicio.costo) }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label for="inscripcion_monto" class="form-label">Monto de Inscripción:</label>
+                        <input type="number" name="inscripcion_monto" id="inscripcion_monto" class="form-control" step="0.01" value="0.00">
+                        <div class="form-text">Solo aplica para la primera membresía del cliente.</div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn btn-success mt-4 w-100">
+                        <i class="fas fa-save me-2"></i> Procesar Pago
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="table-section mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Historial de Pagos</h2>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="payments-search" class="form-control" placeholder="Buscar por nombre...">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+            </div>
+        </div>
+
+        {% if pagos %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped shadow-sm rounded-3 overflow-hidden">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th class="text-end">Costo Servicio</th>
+                        <th class="text-end">Inscripción</th>
+                        <th class="text-end">Total</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-table-body">
+                    {% for pago in pagos %}
+                    <tr>
+                        <td>{{ pago.cliente.nombre if pago.cliente else 'Cliente eliminado' }}</td>
+                        <td>{{ pago.servicio.nombre }}</td>
+                        <td class="text-end">${{ "%.2f"|format(pago.costo_servicio) }}</td>
+                        <td class="text-end">${{ "%.2f"|format(pago.costo_inscripcion) }}</td>
+                        <td class="text-end">${{ "%.2f"|format(pago.costo_servicio + (pago.costo_inscripcion if pago.costo_inscripcion else 0)) }}</td>
+                        <td>{{ pago.fecha_inicio.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ pago.fecha_fin.strftime('%Y-%m-%d') if pago.fecha_fin else 'No aplica' }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('pagos.ver_detalles_pago', pago_id=pago.id) }}" class="btn btn-info text-white">
+    <i class="fas fa-eye"></i> Ver
+</a>
+
+<a href="{{ url_for('pagos.generar_ticket', pago_id=pago.id) }}" class="btn btn-secondary">
+    <i class="fas fa-file-invoice"></i> Ticket
+</a>
+
+<a href="{% if pago.cliente %}{{ url_for('pagos.generar_credencial', cliente_id=pago.cliente.id) }}{% else %}#{% endif %}" 
+   class="btn btn-warning text-white {% if not pago.cliente %}disabled{% endif %}">
+   <i class="fas fa-id-card"></i> Credencial
+</a>
+                              
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center mt-4">No hay pagos registrados.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) { return new bootstrap.Tooltip(tooltipTriggerEl) })
+
+    const toggleFormBtn = document.getElementById('toggle-form-btn');
+    const formSection = document.getElementById('form-section');
+    const formToggleIcon = toggleFormBtn.querySelector('i');
+    formSection.style.display = 'none';
+    toggleFormBtn.addEventListener('click', function() {
+        const isVisible = formSection.style.display === 'block';
+        formSection.style.display = isVisible ? 'none' : 'block';
+        formToggleIcon.classList.toggle('fa-plus-circle', isVisible);
+        formToggleIcon.classList.toggle('fa-times-circle', !isVisible);
+        this.childNodes[2].nodeValue = isVisible ? ' Procesar Nuevo Pago' : ' Ocultar Formulario';
+    });
+
+    // Autocomplete clientes
+    $("#cliente_search").autocomplete({
+        source: function(request, response) {
+            $.getJSON("{{ url_for('pagos.buscar_clientes') }}", { q: request.term }, function(data) { response(data); });
+        },
+        minLength: 2,
+        select: function(event, ui) { $("#cliente_id").val(ui.item.id); $(this).val(ui.item.label); return false; }
+    }).autocomplete("instance")._renderItem = function(ul, item) { return $("<li>").append("<div>" + item.label + "</div>").appendTo(ul); };
+
+    // Submit pago
+    $('#payment-form').on('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = $('#submit-btn');
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Procesando...');
+        $.ajax({
+            type: 'POST',
+            url: '{{ url_for("pagos.procesar_pago") }}',
+            data: $(this).serialize(),
+            success: function(response) {
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save me-2"></i> Procesar Pago');
+                if(response.success){
+                    const alertHtml = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        ${response.message}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                       </div>`;
+                    $('#alert-container').html(alertHtml);
+
+                    if(response.ticket_url){ window.open(response.ticket_url, '_blank'); }
+                    if(response.credencial_url){ window.open(response.credencial_url, '_blank'); }
+
+                    setTimeout(function(){ location.reload(); }, 2000);
+                } else {
+                    const alertHtml = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        ${response.message}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                       </div>`;
+                    $('#alert-container').html(alertHtml);
+                }
+            },
+            error: function(){ 
+                submitBtn.prop('disabled', false).html('<i class="fas fa-save me-2"></i> Procesar Pago');
+                const alertHtml = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    Error al conectar con el servidor.
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                   </div>`;
+                $('#alert-container').html(alertHtml);
+            }
+        });
+    });
+
+    // Buscador tabla
+    $('#payments-search').on('keyup', function(){
+        const query = this.value.toLowerCase();
+        $('#payments-table-body tr').each(function(){
+            const name = $(this).find('td:first').text().toLowerCase();
+            $(this).toggle(name.includes(query));
+        });
+    });
+});
+</script>
+{% endblock %}

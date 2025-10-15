@@ -1,0 +1,87 @@
+/* Estilos para las tarjetas de KPIs */
+.card-kpi {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.card-kpi:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-kpi .card-title {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.card-kpi .card-text {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #343a40;
+}
+
+/* Colores para diferentes tipos de tarjetas */
+.card-active {
+    background-color: #e6f7ee;
+    border-left: 5px solid #28a745;
+}
+
+.card-active .card-text {
+    color: #28a745;
+}
+
+.card-income {
+    background-color: #eaf0fb;
+    border-left: 5px solid #007bff;
+}
+
+.card-income .card-text {
+    color: #007bff;
+}
+
+.card-new {
+    background-color: #fff3e0;
+    border-left: 5px solid #ffc107;
+}
+
+.card-new .card-text {
+    color: #ffc107;
+}
+
+.card-services-income {
+    background-color: #e8f5e9;
+    border-left: 5px solid #4CAF50;
+}
+
+.card-services-income .card-text {
+    color: #4CAF50;
+}
+
+.card-sales-income {
+    background-color: #fce4ec;
+    border-left: 5px solid #E91E63;
+}
+
+.card-sales-income .card-text {
+    color: #E91E63;
+}
+
+/* Estilos para los iconos */
+.card-kpi .card-title i {
+    color: #6c757d;
+    margin-right: 0.5rem;
+}
+
+/* Estilos para los gráficos */
+canvas {
+    max-width: 100%;
+    height: auto;
+}

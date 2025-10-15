@@ -1,0 +1,126 @@
+/* Estilos para el encabezado y el botón de "Añadir Servicio" */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.btn-add-service {
+    background-color: #28a745;
+    border-color: #28a745;
+    transition: all 0.3s ease;
+}
+
+.btn-add-service:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+}
+
+/* Estilos para las tarjetas de servicios */
+.service-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.card-info {
+    font-size: 1rem;
+    color: #777;
+    line-height: 1.6;
+}
+
+.card-info strong {
+    color: #333;
+}
+
+.card-actions {
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Botones de acción */
+.btn-edit, .btn-delete {
+    border-radius: 5px;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Mensaje de "No hay servicios" */
+.no-services-message {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    border: 2px dashed #e9ecef;
+    color: #6c757d;
+}
+
+.no-services-message p {
+    font-size: 1.25rem;
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credencial de Membresía</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .credencial-container {
+            width: 350px;
+            height: 220px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1f4068, #162447);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .credencial-header h2 {
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .credencial-content {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .credencial-content img.foto-perfil {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            margin-right: 15px;
+        }
+        .credencial-details {
+            text-align: left;
+            flex-grow: 1;
+        }
+        .credencial-details p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+        .credencial-details p strong {
+            color: #d6eaff;
+        }
+        .credencial-qr {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .credencial-qr img {
+            width: 80px;
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="credencial-container">
+        <div class="credencial-header">
+            <h2>GYM</h2>
+        </div>
+        <div class="credencial-content">
+            <img src="data:image/png;base64,{{ foto_perfil_b64 }}" alt="Foto de Perfil" class="foto-perfil">
+            <div class="credencial-details">
+                <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+                <p><strong>ID Cliente:</strong> #{{ cliente.id }}</p>
+                <p><strong>Teléfono:</strong> {{ cliente.telefono }}</p>
+                <p><strong>Fecha de Ingreso:</strong> {{ cliente.fecha_registro.strftime('%d-%m-%Y') }}</p>
+            </div>
+        </div>
+        <div class="credencial-qr">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Código QR">
+        </div>
+    </div>
+</body>
+</html>

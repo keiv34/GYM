@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/asistencia.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 text-center">
+                <h2 class="card-title mb-4">Registro de Asistencia</h2>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="alert-container mb-3">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                <div class="mb-4">
+                    <video id="preview" style="width: 100%; height: auto; border-radius: 8px;"></video>
+                </div>
+                
+                <p class="text-muted">Apunte la cámara al código QR.</p>
+
+                <hr>
+
+                <form id="asistenciaForm" action="{{ url_for('asistencias.registrar_asistencia') }}" method="post">
+                    <div class="mb-3">
+                        <label for="entrada_usuario" class="form-label">O ingrese el ID/Código manualmente</label>
+                        <input type="text" class="form-control form-control-lg" id="entrada_usuario" name="entrada_usuario" autofocus required>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Registrar Asistencia</button>
+                    </div>
+                </form>
+
+                <!-- 🚀 Botón al historial -->
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ url_for('asistencias.historial') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-clock-history"></i> Ver Historial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+        
+        scanner.addListener('scan', function (content) {
+            document.getElementById('entrada_usuario').value = content;
+            document.getElementById('asistenciaForm').submit();
+        });
+        
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                console.error('No se encontraron cámaras.');
+                alert('No se encontraron cámaras. Use el ingreso manual.');
+            }
+        }).catch(function (e) {
+            console.error(e);
+            alert('Error al acceder a la cámara. Asegúrese de que su navegador tenga permiso. Use el ingreso manual.');
+        });
+    });
+</script>
+{% endblock %}

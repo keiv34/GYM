@@ -1,0 +1,61 @@
+/* === Estilos para Registro de Asistencia === */
+
+.container {
+    margin-top: 50px;
+}
+
+.card {
+    border-radius: 15px;
+    background: #ffffff;
+    border: none;
+}
+
+.card-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.alert-container {
+    margin-bottom: 20px;
+}
+
+#preview {
+    border: 3px solid #0d6efd;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.text-muted {
+    font-size: 0.95rem;
+    margin-top: 10px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-control-lg {
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 1.1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control-lg:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+.btn-lg {
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 1.2rem;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-lg:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-gradient text-white py-3" 
+             style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
+            <h3 class="mb-0"><i class="fas fa-receipt me-2"></i> Detalles del Pago</h3>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>ID de Pago:</strong> {{ pago.id }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Cliente:</strong> {{ pago.cliente.nombre }}</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Servicio:</strong> {{ pago.servicio.nombre }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Costo del Servicio:</strong> 
+                        <span class="badge bg-primary">${{ "%.2f"|format(pago.costo_servicio) }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Costo de Inscripción:</strong> 
+                        <span class="badge bg-secondary">
+                            ${{ "%.2f"|format(pago.costo_inscripcion) }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Total Pagado:</strong> 
+                        <span class="badge bg-success fs-6">
+                            ${{ "%.2f"|format(pago.costo_servicio + (pago.costo_inscripcion if pago.costo_inscripcion is not none else 0)) }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Fecha de Inicio:</strong> {{ pago.fecha_inicio.strftime('%Y-%m-%d') }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Fecha de Fin:</strong> 
+                        {{ pago.fecha_fin.strftime('%Y-%m-%d') if pago.fecha_fin else 'No aplica' }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <p><strong>Estatus:</strong> 
+                        {% if pago.estatus %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer text-end bg-light">
+            <a href="{{ url_for('pagos.procesar_pago') }}" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="fas fa-arrow-left me-2"></i> Volver a Pagos
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

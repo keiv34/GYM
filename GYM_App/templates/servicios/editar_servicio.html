@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #555;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+
+    .form-btn {
+        flex-grow: 1;
+        padding: 15px;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    
+    .save-btn {
+        background-color: #28a745;
+    }
+    
+    .save-btn:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+
+    .cancel-btn {
+        background-color: #6c757d;
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .cancel-btn:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    .error-message {
+        color: #e3342f;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    
+    /* Estilos del modal basados en la imagen */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 40px 20px 20px 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+        animation: modal-fadein 0.3s ease-out;
+    }
+
+    @keyframes modal-fadein {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-icon-container {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 80px;
+        background-color: #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-icon {
+        font-size: 40px;
+        color: #fff;
+        background-color: #28a745;
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+    .modal-error .modal-icon {
+        background-color: #dc3545;
+    }
+
+    .modal-content h3 {
+        font-size: 24px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .modal-content p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .modal-success h3 { color: #28a745; }
+    .modal-error h3 { color: #dc3545; }
+    
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Editar Servicio</h1>
+    <form method="post" class="client-form" id="editServiceForm" novalidate>
+        <div class="form-group">
+            <label for="nombre">Nombre del Servicio:</label>
+            <input type="text" name="nombre" id="nombre" value="{{ servicio.nombre }}">
+            <div id="nombreError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="tipo_servicio">Tipo de Servicio:</label>
+            <select name="tipo_servicio" id="tipo_servicio">
+                <option value="diaria" {% if servicio.tipo_servicio == 'diaria' %}selected{% endif %}>Diaria</option>
+                <option value="semanal" {% if servicio.tipo_servicio == 'semanal' %}selected{% endif %}>Semanal</option>
+                <option value="quincenal" {% if servicio.tipo_servicio == 'quincenal' %}selected{% endif %}>Quincenal</option>
+                <option value="mensual" {% if servicio.tipo_servicio == 'mensual' %}selected{% endif %}>Mensual</option>
+                <option value="bimestral" {% if servicio.tipo_servicio == 'bimestral' %}selected{% endif %}>Bimestral</option>
+                <option value="trimestral" {% if servicio.tipo_servicio == 'trimestral' %}selected{% endif %}>Trimestral</option>
+                <option value="cuatrimestral" {% if servicio.tipo_servicio == 'cuatrimestral' %}selected{% endif %}>Cuatrimestral</option>
+                <option value="semestral" {% if servicio.tipo_servicio == 'semestral' %}selected{% endif %}>Semestral</option>
+                <option value="anual" {% if servicio.tipo_servicio == 'anual' %}selected{% endif %}>Anual</option>
+                <option value="bienal" {% if servicio.tipo_servicio == 'bienal' %}selected{% endif %}>Bienal (2 años)</option>
+                <option value="visita" {% if servicio.tipo_servicio == 'visita' %}selected{% endif %}>Visita</option>
+            </select>
+            <div id="tipoServicioError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <label for="costo">Costo:</label>
+            <input type="number" name="costo" id="costo" value="{{ servicio.costo }}" step="0.01">
+            <div id="costoError" class="error-message"></div>
+        </div>
+        <div class="form-actions">
+            <a href="{{ url_for('servicios.listar_servicios') }}" class="form-btn cancel-btn">Cancelar</a>
+            <button type="submit" class="form-btn save-btn">Actualizar Servicio</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal para mensajes emergentes -->
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="modalCloseBtn">&times;</span>
+        <div class="modal-icon-container">
+            <i id="modalIcon" class="fas fa-check-circle modal-icon"></i>
+        </div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage"></p>
+    </div>
+</div>
+
+<script>
+    function openModal(title, message, isSuccess) {
+        const modal = document.getElementById('messageModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalContent = modal.querySelector('.modal-content');
+        const modalIcon = document.getElementById('modalIcon');
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        modalContent.classList.remove('modal-success', 'modal-error');
+        if (isSuccess) {
+            modalContent.classList.add('modal-success');
+            modalIcon.classList.remove('fa-exclamation-circle');
+            modalIcon.classList.add('fa-check-circle');
+        } else {
+            modalContent.classList.add('modal-error');
+            modalIcon.classList.remove('fa-check-circle');
+            modalIcon.classList.add('fa-exclamation-circle');
+        }
+
+        modal.style.display = 'block';
+
+        if (isSuccess) {
+            setTimeout(() => {
+                // Redirecciona solo si es un mensaje de éxito
+                window.location.href = "{{ url_for('servicios.listar_servicios') }}";
+            }, 3000); // Cierra automáticamente después de 3 segundos y redirige
+        }
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('messageModal');
+        modal.style.display = 'none';
+    }
+    
+    document.getElementById('modalCloseBtn').onclick = closeModal;
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('messageModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('editServiceForm');
+        form.addEventListener('submit', function(event) {
+            const nombre = document.getElementById('nombre').value.trim();
+            const costo = document.getElementById('costo').value.trim();
+
+            let hasError = false;
+
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+            if (!nombre) {
+                document.getElementById('nombreError').textContent = 'El nombre del servicio es obligatorio.';
+                hasError = true;
+            }
+            if (!costo || isNaN(costo)) {
+                document.getElementById('costoError').textContent = 'El costo es obligatorio y debe ser un número válido.';
+                hasError = true;
+            }
+
+            if (hasError) {
+                event.preventDefault();
+                openModal('Error de Validación', 'Por favor, complete todos los campos obligatorios y válidos.', false);
+            }
+        });
+
+        // Revisar si existen mensajes de flash del servidor
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    const title = category === 'success' ? 'Éxito' : 'Error';
+                    const isSuccess = category === 'success';
+                    openModal(title, message, isSuccess);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    });
+</script>
+{% endblock %}
